@@ -16,6 +16,11 @@ COPY app/requirements.txt .
 # Added 'set -euxo pipefail' to ensure the script exits immediately on any error if pip fails
 RUN set -euxo pipefail && pip install --no-cache-dir -r requirements.txt -v
 
+# Attempt to uninstall gunicorn if it was somehow installed (e.g., as a transitive dependency
+# or part of the base image that conflict with ASGI startup).
+# This is a defensive measure to ensure only Uvicorn is running.
+RUN pip uninstall -y gunicorn || echo "gunicorn not found or unable to uninstall, skipping."
+
 # Copy the entire contents of your local 'app' directory into the container's /app directory.
 # This ensures main.py is directly at /app/main.py and other modules (like quickstart_agent) are accessible.
 COPY app/ .
@@ -27,5 +32,5 @@ EXPOSE 8080
 # Since main.py is now at /app/main.py, 'main:app' is correct.
 ENV APP_MODULE=main:app
 
-# Command to run the application using Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Command to run the application using Uvicorn, explicitly calling it as a Python module
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
