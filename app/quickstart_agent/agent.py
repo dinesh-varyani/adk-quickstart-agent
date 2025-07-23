@@ -1,8 +1,6 @@
 import datetime
 from zoneinfo import ZoneInfo
 from google.adk.agents import Agent
-from google.adk.models.lite_llm import LiteLlm # Using LiteLlm for broader model support
-from google.adk.tools import FunctionTool # Import FunctionTool to wrap custom functions
 
 def get_weather(city: str) -> dict:
     """Retrieves the current weather report for a specified city.
@@ -55,21 +53,15 @@ def get_current_time(city: str) -> dict:
     )
     return {"status": "success", "report": report}
 
-# Wrap the functions as FunctionTools
-weather_tool = FunctionTool(name="get_weather", function=get_weather, description="Retrieves the current weather report for a specified city.")
-time_tool = FunctionTool(name="get_current_time", function=get_current_time, description="Returns the current time in a specified city.")
 
-
-# Define the ADK Agent, now using the wrapped tools
 root_agent = Agent(
     name="weather_time_agent",
-    model=LiteLlm("gemini-1.5-flash-latest"), # Keep LiteLlm, as it abstracts model access
+    model="gemini-2.0-flash",
     description=(
         "Agent to answer questions about the time and weather in a city."
     ),
     instruction=(
-        "You are a helpful agent who can answer user questions about the time and weather in a city. "
-        "Use the 'get_weather' tool for weather questions and 'get_current_time' tool for time questions."
+        "You are a helpful agent who can answer user questions about the time and weather in a city."
     ),
-    tools=[weather_tool, time_tool], # Pass the FunctionTool instances
+    tools=[get_weather, get_current_time],
 )
