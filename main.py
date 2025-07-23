@@ -3,8 +3,10 @@ import os
 import uvicorn
 from google.adk.cli.fast_api import get_fast_api_app
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Get the directory where main.py is located
-AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
+AGENT_CODE_DIR = os.path.join(BASE_DIR, "weather_time_agent")
 # Example session service URI (e.g., SQLite)
 SESSION_SERVICE_URI = "sqlite:///./sessions.db"
 # Example allowed origins for CORS
