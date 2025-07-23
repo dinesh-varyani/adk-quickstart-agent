@@ -1,4 +1,4 @@
-fastapi==0.111.0 # Latest stable version
-uvicorn==0.30.1 # Latest stable version
+fastapi
+uvicorn
 google-adk
-python-dotenv==1.0.1
+python-dotenv
