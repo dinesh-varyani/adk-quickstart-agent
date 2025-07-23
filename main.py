@@ -27,7 +27,7 @@ ALLOWED_ORIGINS = ["http://localhost", "http://localhost:8080", "*"]
 # Set web=True if you intend to serve a web interface (like ADK's default UI), False otherwise.
 # Setting to True serves a default UI on the root path ('/').
 # Set to False if you want your custom routes (like '/') to be the primary interface.
-SERVE_WEB_INTERFACE = False
+SERVE_WEB_INTERFACE = True
 
 # Call the function to get the FastAPI app instance.
 # This function automatically sets up the ADK Runner and exposes the /predict endpoint.
