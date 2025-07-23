@@ -25,10 +25,12 @@ SESSION_SERVICE_URI = "sqlite:///./sessions.db"
 ALLOWED_ORIGINS = ["http://localhost", "http://localhost:8080", "*"]
 
 # Set web=True if you intend to serve a web interface (like ADK's default UI), False otherwise.
-# Be aware that setting to True might serve a default UI on the root path ('/').
-SERVE_WEB_INTERFACE = False # Set to False if you want full control over your routes
+# Setting to True serves a default UI on the root path ('/').
+# Set to False if you want your custom routes (like '/') to be the primary interface.
+SERVE_WEB_INTERFACE = False
 
-# Call the function to get the FastAPI app instance
+# Call the function to get the FastAPI app instance.
+# This function automatically sets up the ADK Runner and exposes the /predict endpoint.
 app = get_fast_api_app(
     agents_dir=AGENT_CODE_DIR, # Point to the specific agent folder
     session_service_uri=SESSION_SERVICE_URI,
@@ -36,53 +38,20 @@ app = get_fast_api_app(
     web=SERVE_WEB_INTERFACE,
 )
 
-# Pydantic model for the request body of the /predict endpoint
-class QueryRequest(BaseModel):
-    query: str
+# You can add custom FastAPI routes here if you need additional API endpoints
+# beyond what ADK's get_fast_api_app provides (e.g., a custom health check).
 
 @app.get("/", summary="Health Check")
 async def health_check():
     """
     Checks if the API is running and healthy.
+    This is a custom health check, separate from ADK's functionality.
     """
     return {"status": "healthy", "message": "ADK Weather and Time Agent is up!"}
 
-@app.post("/predict", summary="Run ADK Agent with Query")
-async def predict(request_body: QueryRequest):
-    """
-    Receives a user query and runs the ADK agent to get a response.
-    """
-    user_query = request_body.query
-    if not user_query:
-        raise HTTPException(status_code=400, detail="No query provided")
-
-    try:
-        # Access the ADK Runner instance set up by get_fast_api_app
-        # It's typically stored in app.state.adk_runner
-        adk_runner = app.state.adk_runner
-
-        # Define a default user and session ID for demonstration purposes
-        # In a real application, these might come from authentication or request headers
-        USER_ID = "user_adk_fastapi_custom"
-        SESSION_ID = "session_adk_fastapi_custom_001"
-
-        final_response_text = ""
-        # The runner.run() method handles session management internally using the
-        # session_service configured in get_fast_api_app.
-        async for event in adk_runner.run(USER_ID, SESSION_ID, user_query):
-            if event.type == "final_response":
-                # ADK events.message.content contains the actual response text
-                final_response_text = event.message.content
-                break # Assuming we only care about the first final response
-
-        if not final_response_text:
-            final_response_text = "The agent did not produce a final response."
-
-        return {"response": final_response_text}
-    except Exception as e:
-        print(f"Error processing query: {e}")
-        # Raise an HTTPException to return a proper HTTP error response
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+# The /predict endpoint is now automatically handled by get_fast_api_app.
+# You do NOT need to define it manually here.
+# If you try to define it, it will conflict or cause unexpected behavior.
 
 if __name__ == "__main__":
     # Cloud Run automatically provides the PORT environment variable
